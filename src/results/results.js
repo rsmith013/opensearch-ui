@@ -1,4 +1,5 @@
 import React from "react";
+import $ from 'jquery'
 
 function deParam(querystring) {
   // remove any preceding url and split
@@ -70,19 +71,19 @@ class ItemsPerPage extends React.Component {
     constructor(props){
         super(props)
 
-        this.onSelect = this.onSelect.bind(this)
+        this.onChange = this.onChange.bind(this)
     }
 
-
-    onSelect(event){
-        console.log(event.currentTarget)
+    onChange(event){
+        const items_per_page = $(event.currentTarget).children("option:selected").val()
+        this.props.add_query_param("maximumRecords", items_per_page)
     }
 
     render() {
         return (
             <div className="row justify-content-end">
                 <div className="col-2">
-                    <select className="custom-select" onSelect={this.onSelect}>
+                    <select className="custom-select" onChange={this.onChange}>
                         <option value="10">10</option>
                         <option value="25">25</option>
                         <option value="50">50</option>

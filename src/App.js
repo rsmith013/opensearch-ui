@@ -268,7 +268,7 @@ class QueryParam extends React.Component {
     render() {
 
         return (
-            <span className="badge badge-info">{this.props.param}:{this.props.value}</span>
+            <span className="badge badge-info p-2 m-1">{this.props.param}: {this.props.value}</span>
         )
     }
 
