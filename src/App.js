@@ -6,6 +6,10 @@ import loading from './loading.gif'
 import ResultsPane from './results/results'
 import FacetFilter from './facets/facets'
 
+function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 
 class App extends React.Component {
 
@@ -13,12 +17,14 @@ class App extends React.Component {
         super(props);
         this.state = {
             target: this.props.opensearch_url + "/description.xml",
-            queryParams:{}
+            queryParams: {}
         };
 
         this.loadDescription = this.loadDescription.bind(this);
         this.updateDescriptionTarget = this.updateDescriptionTarget.bind(this);
         this.add_query_param = this.add_query_param.bind(this);
+        this.remove_query_param = this.remove_query_param.bind(this);
+        this.set_query_params = this.set_query_params.bind(this);
         this.search = this.search.bind(this)
     }
 
@@ -32,12 +38,10 @@ class App extends React.Component {
             this.loadDescription()
         }
 
-
-        // console.log(this.state)
-        // console.log(prevState)
-
-        // if (this.state.queryParams !== prevState.queryParams){
-        // }
+        if (this.state.search) {
+            this.setState({search: false});
+            this.search()
+        }
     }
 
     updateDescriptionTarget(target, collectionId) {
@@ -69,14 +73,22 @@ class App extends React.Component {
     add_query_param(key, value) {
         let new_state = Object.assign({}, this.state);
         new_state.queryParams[key] = value;
+        new_state.search = true;
         this.setState(new_state);
-        this.search()
 
     }
 
-    set_query_params(params){
-        let new_state = Object.assign({}, this.state, {queryParams:params});
+    remove_query_param(key, value) {
+        let new_state = Object.assign({}, this.state);
+        delete new_state.queryParams[key]
+        new_state.search = true;
+        this.setState(new_state)
+    }
+
+    set_query_params(params) {
+        let new_state = Object.assign({}, this.state, {queryParams: params});
         this.setState(new_state);
+        new_state.search = true;
     }
 
     search() {
@@ -84,21 +96,21 @@ class App extends React.Component {
 
         let params = [];
 
-        let url = this.props.opensearch_url + "/json+geo?";
+        let url = this.props.opensearch_url + "/request?";
 
         keys.forEach((key) => {
             switch (key) {
                 case "searchTerms":
-                    params.push("q=" + this.state.queryParams[key]);
+                    params.push("query=" + this.state.queryParams[key]);
                     break;
                 default:
                     params.push(key + "=" + this.state.queryParams[key]);
             }
         });
 
-        url = url + params.join('&');
+        url = url + params.join('&') + "&httpAccept=application/geo%2Bjson";
 
-        console.log(url)
+        console.log(url);
 
         $.get({
             url: url,
@@ -126,6 +138,8 @@ class App extends React.Component {
                         state={this.state}
                         updateTarget={this.updateDescriptionTarget}
                         add_query_param={this.add_query_param}
+                        remove_query_param={this.remove_query_param}
+                        set_query_params={this.set_query_params}
 
                     />
                 </div>
@@ -143,6 +157,7 @@ class App extends React.Component {
 
 export default App;
 
+
 class FacetedSearch extends React.Component {
 
     render() {
@@ -155,12 +170,20 @@ class FacetedSearch extends React.Component {
             return (
                 <div className="row">
                     <div className="col-3">
-                        <FacetFilter urls={urls}/>
+                        <FacetFilter urls={urls}
+                                     add_query_param={this.props.add_query_param}
+                                     remove_query_param={this.props.remove_query_param}
+                        />
                     </div>
                     <div className="col-9">
                         <SearchBar add_query_param={this.props.add_query_param}/>
                         <QueryParamList queryParams={queryParams}/>
-                        <ResultsPane results={results} updateTarget={this.props.updateTarget}/>
+                        <ResultsPane
+                            results={results}
+                            updateTarget={this.props.updateTarget}
+                            set_query_params={this.props.set_query_params}
+                            add_query_param={this.props.add_query_param}
+                        />
                     </div>
                 </div>
             )
@@ -168,7 +191,11 @@ class FacetedSearch extends React.Component {
             return (
                 <div className="row">
                     <div className="col-3">
-                        <FacetFilter urls={urls}/>
+                        <FacetFilter
+                            urls={urls}
+                            add_query_param={this.props.add_query_param}
+                            remove_query_param={this.props.remove_query_param}
+                        />
                     </div>
                     <div className="col-9">
                         <SearchBar add_query_param={this.props.add_query_param}/>
@@ -222,7 +249,6 @@ class SearchBar extends React.Component {
 }
 
 
-
 class PageTitle extends React.Component {
     render() {
         const description = this.props.description
@@ -235,8 +261,6 @@ class PageTitle extends React.Component {
         )
     }
 }
-
-
 
 
 class QueryParam extends React.Component {

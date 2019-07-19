@@ -30,26 +30,14 @@ function deParam(querystring) {
 
 class ResultsPane extends React.Component {
     // Main results pane
-    constructor(props){
-        super(props);
-
-        this.getNoPages = this.getNoPages.bind(this);
-    }
-
-    getNoPages(){
-        const totalResults = this.props.results.totalResults;
-        const itemsPerPage = this.props.results.itemsPerPage;
-
-        return Math.ceil(totalResults/itemsPerPage)
-    }
 
     render() {
         return (
             <div>
-                <ItemsPerPage/>
+                <ItemsPerPage add_query_param={this.props.add_query_param}/>
                 <SearchInfo metadata={this.props.results}/>
                 <ResultList features={this.props.results.features} updateTarget={this.props.updateTarget}/>
-                <NavigationLinks links={this.props.results.links} pages={this.getNoPages()}/>
+                <NavigationLinks links={this.props.results.links} set_query_params={this.props.set_query_params}/>
             </div>
         )
     }
@@ -79,11 +67,22 @@ class SearchInfo extends React.Component {
 class ItemsPerPage extends React.Component {
     // Items per page selector
 
+    constructor(props){
+        super(props)
+
+        this.onSelect = this.onSelect.bind(this)
+    }
+
+
+    onSelect(event){
+        console.log(event.currentTarget)
+    }
+
     render() {
         return (
             <div className="row justify-content-end">
                 <div className="col-2">
-                    <select className="custom-select">
+                    <select className="custom-select" onSelect={this.onSelect}>
                         <option value="10">10</option>
                         <option value="25">25</option>
                         <option value="50">50</option>
@@ -159,12 +158,14 @@ class LinkSet extends React.Component {
             this.props.links.forEach((link) => {
                 Object.keys(link).forEach((rel) => {
                     link[rel].forEach((clickableLink) => {
-                        links.push(<ResultLink
+                        links.push(<Link
                             rel={rel}
                             link={clickableLink}
                             updateTarget={this.props.updateTarget}
                             id={id}
-                            key={clickableLink.href}/>)
+                            key={clickableLink.href + clickableLink.title}
+                            set_query_params={this.props.set_query_params}/>
+                        )
                     })
                 })
             });
@@ -182,7 +183,7 @@ class LinkSet extends React.Component {
 }
 
 
-class ResultLink extends React.Component {
+class Link extends React.Component {
     // Individual links
 
     constructor(props) {
@@ -204,9 +205,10 @@ class ResultLink extends React.Component {
         event.preventDefault();
 
         // Extract query params
-        console.log(deParam(event.currentTarget.href))
+        const params = deParam(event.currentTarget.href);
 
-
+        console.log(params);
+        this.props.set_query_params(params)
 
     }
 
@@ -234,9 +236,10 @@ class ResultLink extends React.Component {
 }
 
 class NavigationLinks extends LinkSet {
+
     render() {
 
-        const links = this.parseLinks()
+        const links = this.parseLinks();
 
 
         return (
