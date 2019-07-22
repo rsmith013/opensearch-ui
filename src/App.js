@@ -6,11 +6,6 @@ import loading from './loading.gif'
 import ResultsPane from './results/results'
 import FacetFilter from './facets/facets'
 
-function numberWithCommas(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-
-
 class App extends React.Component {
 
     constructor(props) {
@@ -29,7 +24,8 @@ class App extends React.Component {
     }
 
     componentDidMount() {
-        this.loadDescription()
+        this.loadDescription();
+
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -78,8 +74,10 @@ class App extends React.Component {
 
     }
 
-    remove_query_param(key, value) {
+    remove_query_param(key) {
         let new_state = Object.assign({}, this.state);
+        console.log(new_state)
+        console.log(key)
         delete new_state.queryParams[key]
         new_state.search = true;
         this.setState(new_state)
@@ -169,15 +167,18 @@ class FacetedSearch extends React.Component {
         if (this.props.state.results) {
             return (
                 <div className="row">
-                    <div className="col-3">
+                    <div className="col-lg-3">
                         <FacetFilter urls={urls}
                                      add_query_param={this.props.add_query_param}
                                      remove_query_param={this.props.remove_query_param}
                         />
                     </div>
-                    <div className="col-9">
+                    <div className="col-lg-9">
                         <SearchBar add_query_param={this.props.add_query_param}/>
-                        <QueryParamList queryParams={queryParams}/>
+                        <QueryParamList
+                            queryParams={queryParams}
+                            remove_query_param={this.props.remove_query_param}
+                        />
                         <ResultsPane
                             results={results}
                             updateTarget={this.props.updateTarget}
@@ -190,16 +191,19 @@ class FacetedSearch extends React.Component {
         } else {
             return (
                 <div className="row">
-                    <div className="col-3">
+                    <div className="col-lg-3">
                         <FacetFilter
                             urls={urls}
                             add_query_param={this.props.add_query_param}
                             remove_query_param={this.props.remove_query_param}
                         />
                     </div>
-                    <div className="col-9">
+                    <div className="col-lg-9">
                         <SearchBar add_query_param={this.props.add_query_param}/>
-                        <QueryParamList queryParams={queryParams}/>
+                        <QueryParamList
+                            queryParams={queryParams}
+                            remove_query_param={this.props.remove_query_param}
+                        />
 
                     </div>
                 </div>
@@ -255,7 +259,7 @@ class PageTitle extends React.Component {
 
         return (
             <div>
-                <h1>{description.ShortName['#text']} </h1>
+                <h1 className="mt-5">{description.ShortName['#text']} </h1>
                 <h4>{description.Description['#text']}</h4>
             </div>
         )
@@ -265,10 +269,29 @@ class PageTitle extends React.Component {
 
 class QueryParam extends React.Component {
 
+    constructor(props) {
+        super(props);
+
+        this.removeParam = this.removeParam.bind(this);
+    }
+
+    removeParam(event) {
+        event.preventDefault();
+        const param = event.currentTarget.dataset.param;
+        this.props.remove_query_param(param)
+    }
+
     render() {
 
         return (
-            <span className="badge badge-info p-2 m-1">{this.props.param}: {this.props.value}</span>
+            <span className="badge badge-info p-2 m-1">
+                {this.props.param}: {this.props.value}
+                <button className="btn btn-info btn-sm"
+                   data-param={this.props.param}
+                   onClick={this.removeParam}>
+                    <i className="fas fa-times-circle"/>
+                </button>
+            </span>
         )
     }
 
@@ -281,7 +304,12 @@ class QueryParamList extends React.Component {
         const param_tags = [];
 
         Object.keys(query_params).forEach((param) => {
-            param_tags.push(<QueryParam param={param} key={param} value={query_params[param]}/>)
+            param_tags.push(<QueryParam
+                param={param}
+                key={param}
+                value={query_params[param]}
+                remove_query_param={this.props.remove_query_param}
+            />)
 
         });
 

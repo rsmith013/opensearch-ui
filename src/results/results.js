@@ -2,31 +2,42 @@ import React from "react";
 import $ from 'jquery'
 
 function deParam(querystring) {
-  // remove any preceding url and split
-  querystring = querystring.substring(querystring.indexOf('?')+1).split('&');
-  var params = {}, pair, d = decodeURIComponent;
-  // march and parse
-  for (var i = querystring.length - 1; i >= 0; i--) {
-    pair = querystring[i].split('=');
+    // remove any preceding url and split
+    querystring = querystring.substring(querystring.indexOf('?') + 1).split('&');
+    var params = {}, pair, d = decodeURIComponent;
+    // march and parse
+    for (var i = querystring.length - 1; i >= 0; i--) {
+        pair = querystring[i].split('=');
 
-    var key = d(pair[0]);
-    var val = d(pair[1]) || '';
+        var key = d(pair[0]);
+        var val = d(pair[1]) || '';
 
-    if (params.hasOwnProperty(key)) {
-      if (Array.isArray(params[key])) {
-          params[key].unshift(val);
-      } else {
-          params[key] = [params[key]];
-          params[key].unshift(val);
-      }
-    } else {
-      params[key] = val;
+        if (params.hasOwnProperty(key)) {
+            if (Array.isArray(params[key])) {
+                params[key].unshift(val);
+            } else {
+                params[key] = [params[key]];
+                params[key].unshift(val);
+            }
+        } else {
+            params[key] = val;
+        }
+
+
     }
 
+    return params;
+}
 
-  }
+function dateSplit(result){
 
-  return params;
+    const date = result.properties.date;
+
+    if (date !== undefined){
+        return date.split("/")
+    } else {
+        return ['','']
+    }
 }
 
 class ResultsPane extends React.Component {
@@ -68,13 +79,13 @@ class SearchInfo extends React.Component {
 class ItemsPerPage extends React.Component {
     // Items per page selector
 
-    constructor(props){
+    constructor(props) {
         super(props)
 
         this.onChange = this.onChange.bind(this)
     }
 
-    onChange(event){
+    onChange(event) {
         const items_per_page = $(event.currentTarget).children("option:selected").val()
         this.props.add_query_param("maximumRecords", items_per_page)
     }
@@ -112,14 +123,9 @@ class ResultList extends React.Component {
         );
 
         return (
-            <table className="table table-striped">
-                <thead className="thead-dark">
-                <tr>
-                    <th>Results</th>
-                </tr>
-                </thead>
-                <tbody>{rows}</tbody>
-            </table>
+            <div>
+                {rows}
+            </div>
 
         )
     }
@@ -131,15 +137,25 @@ class Result extends React.Component {
     render() {
         const result = this.props.result;
 
-        return <tr>
-            <td>{result.properties.title}
-                <LinkSet
-                    links={result.properties.links}
-                    updateTarget={this.props.updateTarget}
-                    id={result.properties.identifier}
-                />
-            </td>
-        </tr>
+        const date_range = dateSplit(result);
+
+        return (
+            <div className="card">
+                <div className="card-header bg-dark text-light">
+                    <h4 className="mb-0">{result.properties.title}
+                        <span className="badge badge-success float-right">{result.type}</span></h4>
+                </div>
+                <div className="card-body">
+                    <p>Start Date: {date_range[0]}</p>
+                    <p>End Date: {date_range[1]}</p>
+                    <LinkSet
+                        links={result.properties.links}
+                        updateTarget={this.props.updateTarget}
+                        id={result.properties.identifier}
+                    />
+                </div>
+            </div>
+        )
     }
 }
 
@@ -219,17 +235,22 @@ class Link extends React.Component {
 
         switch (rel) {
             case "search":
-                return(<div className="col"><a rel={rel} href={link.href} type={link.type} onClick={this.onClick}>{link.title}</a></div>)
+                return (<div className="col"><a className="btn btn-primary" rel={rel} href={link.href} type={link.type}
+                                                onClick={this.onClick}>Search Collection</a></div>)
             case "first":
-                return(<div className="col-1 text-center"><a rel={rel} href={link.href} onClick={this.onNavigate}><i className="fas fa-fast-backward"/>{link.title}</a></div>)
+                return (<div className="col-1 text-center"><a rel={rel} href={link.href} onClick={this.onNavigate}><i
+                    className="fas fa-fast-backward"/>{link.title}</a></div>)
             case "previous":
-                return(<div className="col-1 text-center"><a rel={rel} href={link.href} onClick={this.onNavigate}><i className="fas fa-step-backward"/>{link.title}</a></div>)
+                return (<div className="col-1 text-center"><a rel={rel} href={link.href} onClick={this.onNavigate}><i
+                    className="fas fa-step-backward"/>{link.title}</a></div>)
             case "next":
-                return(<div className="col-1 text-center"><a rel={rel} href={link.href} onClick={this.onNavigate}><i className="fas fa-step-forward"/>{link.title}</a></div>)
+                return (<div className="col-1 text-center"><a rel={rel} href={link.href} onClick={this.onNavigate}><i
+                    className="fas fa-step-forward"/>{link.title}</a></div>)
             case "last":
-                return(<div className="col-1 text-center"><a rel={rel} href={link.href} onClick={this.onNavigate}><i className="fas fa-fast-forward"/>{link.title}</a></div>)
+                return (<div className="col-1 text-center"><a rel={rel} href={link.href} onClick={this.onNavigate}><i
+                    className="fas fa-fast-forward"/>{link.title}</a></div>)
             default:
-                return(<div className="col"><a rel={rel} href={link.href} type={link.type}>{link.title}</a></div>)
+                return (<div className="col"><a rel={rel} href={link.href} type={link.type}>{link.title}</a></div>)
         }
 
 

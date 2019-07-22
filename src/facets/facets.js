@@ -113,12 +113,15 @@ class FacetFilter extends React.Component {
         );
 
         return (
-            <div className="card">
-                <div className="card-header text-center">
-                    <h5>Search Facets</h5>
+            <div>
+                <div className="card">
+                    <div className="card-header text-center bg-dark text-light">
+                        <h3>Search Facets</h3>
+                    </div>
                 </div>
                 {facets}
             </div>
+
         )
 
 
