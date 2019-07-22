@@ -76,9 +76,7 @@ class App extends React.Component {
 
     remove_query_param(key) {
         let new_state = Object.assign({}, this.state);
-        console.log(new_state)
-        console.log(key)
-        delete new_state.queryParams[key]
+        delete new_state.queryParams[key];
         new_state.search = true;
         this.setState(new_state)
     }
@@ -171,6 +169,7 @@ class FacetedSearch extends React.Component {
                         <FacetFilter urls={urls}
                                      add_query_param={this.props.add_query_param}
                                      remove_query_param={this.props.remove_query_param}
+                                     query_params={queryParams}
                         />
                     </div>
                     <div className="col-lg-9">
@@ -287,8 +286,8 @@ class QueryParam extends React.Component {
             <span className="badge badge-info p-2 m-1">
                 {this.props.param}: {this.props.value}
                 <button className="btn btn-info btn-sm"
-                   data-param={this.props.param}
-                   onClick={this.removeParam}>
+                        data-param={this.props.param}
+                        onClick={this.removeParam}>
                     <i className="fas fa-times-circle"/>
                 </button>
             </span>

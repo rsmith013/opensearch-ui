@@ -1,6 +1,9 @@
 import React from "react";
 import $ from "jquery";
 
+Array.prototype.diff = function(a) {
+    return this.filter(function(i) {return a.indexOf(i) < 0;});
+};
 
 class FacetOption extends React.Component {
 
@@ -32,11 +35,34 @@ class FacetOption extends React.Component {
 class FacetCategory extends React.Component {
 
     constructor(props) {
-        super(props)
-
+        super(props);
         this.updateFacets = this.updateFacets.bind(this)
 
     }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        // Update the checkboxes based on state
+        const param = this.props.parameter['@name'];
+        const facet = $('div.card-body[id="' + param + '"]');
+        const filtervals = this.props.filter_values;
+        let diff = [];
+
+        if (prevProps.filter_values !== undefined){
+
+            if (filtervals === undefined){
+                diff = prevProps.filter_values
+            } else {
+                diff = prevProps.filter_values.diff(filtervals)
+            }
+        }
+
+        diff.forEach((item) => {
+            let input = facet.find('input[name="' + item + '"]')
+            input.prop('checked', false)
+        })
+
+    }
+
 
     updateFacets(event) {
         const param = this.props.parameter['@name'];
@@ -98,7 +124,12 @@ class FacetFilter extends React.Component {
     render() {
         const facets = [];
 
-        const facetDescription = this.props.urls[this.props.urls.findIndex(x => x['@rel'] === "results")]
+        const facetDescription = this.props.urls[this.props.urls.findIndex(x => x['@rel'] === "results")];
+        let qparams = this.props.query_params;
+
+        if (qparams === undefined){
+            qparams = {}
+        }
 
         facetDescription.Parameter.forEach((parameter) => {
                 if (parameter.Option) {
@@ -107,6 +138,7 @@ class FacetFilter extends React.Component {
                         remove_query_param={this.props.remove_query_param}
                         parameter={parameter}
                         key={parameter['@name']}
+                        filter_values={qparams[parameter['@name']]}
                     />)
                 }
             }
