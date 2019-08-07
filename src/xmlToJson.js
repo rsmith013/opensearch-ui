@@ -28,9 +28,10 @@ const xml2json = function xmlToJson(xml) {
 			let item = xml.childNodes.item(i);
 			let nodeName = item.nodeName;
 
+
 			// Remove namespace
 			if (nodeName.split(":").length > 1){
-			    let ns = nodeName.split(":")
+			    let ns = nodeName.split(":");
                 nodeName = nodeName.replace(ns[0]+":", "")
             }
 

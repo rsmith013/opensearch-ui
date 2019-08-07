@@ -1,8 +1,10 @@
 import React from "react";
 import $ from "jquery";
 
-Array.prototype.diff = function(a) {
-    return this.filter(function(i) {return a.indexOf(i) < 0;});
+Array.prototype.diff = function (a) {
+    return this.filter(function (i) {
+        return a.indexOf(i) < 0;
+    });
 };
 
 class FacetOption extends React.Component {
@@ -47,9 +49,9 @@ class FacetCategory extends React.Component {
         const filtervals = this.props.filter_values;
         let diff = [];
 
-        if (prevProps.filter_values !== undefined){
+        if (prevProps.filter_values !== undefined) {
 
-            if (filtervals === undefined){
+            if (filtervals === undefined) {
                 diff = prevProps.filter_values
             } else {
                 diff = prevProps.filter_values.diff(filtervals)
@@ -71,13 +73,13 @@ class FacetCategory extends React.Component {
         const options = [];
 
         inputs.each((i) => {
-            if (inputs[i].checked){
+            if (inputs[i].checked) {
                 options.push(inputs[i].name)
             }
         });
 
         // Check to see if options is empty
-        if (options.length>0){
+        if (options.length > 0) {
             this.props.add_query_param(param, options)
         } else {
             this.props.remove_query_param(param)
@@ -90,14 +92,24 @@ class FacetCategory extends React.Component {
         const parameter = this.props.parameter;
         const facetLabels = [];
 
-        parameter.Option.forEach((option, i) => {
-                facetLabels.push(<FacetOption
+        if (Array.isArray(parameter.Option)) {
+            parameter.Option.forEach((option, i) => {
+                    facetLabels.push(<FacetOption
+                        updateFacets={this.updateFacets}
+                        option={option}
+                        key={i}
+                    />)
+                }
+            );
+        } else {
+            facetLabels.push(
+                <FacetOption
                     updateFacets={this.updateFacets}
-                    option={option}
-                    key={i}
-                />)
-            }
-        );
+                    option={parameter.Option}
+                    key={1}
+                />
+            )
+        }
 
         return (
             <div className="card">
@@ -127,7 +139,7 @@ class FacetFilter extends React.Component {
         const facetDescription = this.props.urls[this.props.urls.findIndex(x => x['@rel'] === "results")];
         let qparams = this.props.query_params;
 
-        if (qparams === undefined){
+        if (qparams === undefined) {
             qparams = {}
         }
 
